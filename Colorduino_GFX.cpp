@@ -23,8 +23,7 @@
 
 static ColorduinoPanel *activePanel = NULL;
 
-ColorduinoPanel::ColorduinoPanel() {
-  constructor(ColorduinoScreenWidth, ColorduinoScreenHeight);
+ColorduinoPanel::ColorduinoPanel() : Adafruit_GFX(ColorduinoScreenWidth, ColorduinoScreenHeight) {
   line = 0;
   // create two buffers
   uint16_t len = ColorduinoScreenWidth * ColorduinoScreenHeight * sizeof(GFX_Color_t);
