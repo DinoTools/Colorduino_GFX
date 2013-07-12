@@ -26,11 +26,11 @@ static ColorduinoPanel *activePanel = NULL;
 ColorduinoPanel::ColorduinoPanel() : Adafruit_GFX(ColorduinoScreenWidth, ColorduinoScreenHeight) {
   line = 0;
   // create two buffers
-  uint16_t len = ColorduinoScreenWidth * ColorduinoScreenHeight * sizeof(GFX_Color_t);
-  writeBuffer = (GFX_Color_t *)malloc(len);
-  drawBuffer = (GFX_Color_t *)malloc(len);
+  uint16_t len = ColorduinoScreenWidth * ColorduinoScreenHeight * sizeof(Colorduino_Color_t);
+  writeBuffer = (Colorduino_Color_t *)malloc(len);
+  activeBuffer = (Colorduino_Color_t *)malloc(len);
   memset(writeBuffer, 0, len);
-  memset(drawBuffer, 0, len);
+  memset(activeBuffer, 0, len);
   activePanel = this;
 }
 
@@ -40,7 +40,12 @@ void ColorduinoPanel::begin(void) {
 }
 
 GFX_Color_t ColorduinoPanel::color(uint8_t r, uint8_t g, uint8_t b) {
+#if GFX_COLOR_MODE == GFX_COLOR_16BIT
+  GFX_Color_t color;
+  color = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+#elif GFX_COLOR_MODE == GFX_COLOR_RGB24BIT
   GFX_Color_t color = {r, g, b};
+#endif
   return color;
 }
 
@@ -48,31 +53,58 @@ void ColorduinoPanel::drawPixel(GFX_Coord_t x, GFX_Coord_t y, GFX_Color_t color)
   if(x > 7 || y > 7 || x < 0 || y < 0)
     return;
   
-  GFX_Color_t *p = getPixel(x,y);
+  Colorduino_Color_t *p = _getWritePixel(x,y);
+#if GFX_COLOR_MODE == GFX_COLOR_16BIT
+  p->r = (uint8_t)(color >> 8) & 0xF8;
+  p->g = (uint8_t)(color >> 3) & 0xFC;
+  p->b = (uint8_t)(color << 3);
+#elif GFX_COLOR_MODE == GFX_COLOR_RGB24BIT
   p->r = color.r;
   p->g = color.g;
   p->b = color.b;
+#endif
 }
 
 void ColorduinoPanel::fillColor(GFX_Color_t color) {
-  GFX_Color_t *p = getPixel(0,0);
+  Colorduino_Color_t *p = _getWritePixel(0,0);
+  uint8_t r, g, b;
+#if GFX_COLOR_MODE == GFX_COLOR_16BIT
+  r = (uint8_t)(color >> 8) & 0xF8;
+  g = (uint8_t)(color >> 3) & 0xFC;
+  b = (uint8_t)(color << 3);
+#elif GFX_COLOR_MODE == GFX_COLOR_RGB24BIT
+  r = color.r;
+  g = color.g;
+  b = color.b;
+#endif
   for (unsigned char y=0; y < ColorduinoScreenWidth; y++) {
     for(unsigned char x=0; x < ColorduinoScreenHeight; x++) {
-      p->r = color.r;
-      p->g = color.g;
-      p->b = color.b;
+      p->r = r;
+      p->g = g;
+      p->b = b;
       p++;
     }
   }
 }
 
-GFX_Color_t *ColorduinoPanel::getPixel(GFX_Coord_t x, GFX_Coord_t y) {
-  return writeBuffer + (y * ColorduinoScreenWidth) + x;
+// get a pixel from the active framebuffer
+GFX_Color_t ColorduinoPanel::getActivePixel(GFX_Coord_t x, GFX_Coord_t y) {
+  Colorduino_Color_t *c = activeBuffer + (y * ColorduinoScreenWidth) + x;
+  return color(c->r, c->g, c->b);
 }
 
-// get a pixel from the active framebuffer
-GFX_Color_t *ColorduinoPanel::getDrawPixel(GFX_Coord_t x, GFX_Coord_t y) {
-  return drawBuffer + (y * ColorduinoScreenWidth) + x;
+// get a pixel from the active framebuffer(private)
+Colorduino_Color_t *ColorduinoPanel::_getActivePixel(GFX_Coord_t x, GFX_Coord_t y) {
+  return activeBuffer + (y * ColorduinoScreenWidth) + x;
+}
+
+GFX_Color_t ColorduinoPanel::getWritePixel(GFX_Coord_t x, GFX_Coord_t y) {
+  Colorduino_Color_t *c = writeBuffer + (y * ColorduinoScreenWidth) + x;
+  return color(c->r, c->g, c->b);
+}
+
+Colorduino_Color_t *ColorduinoPanel::_getWritePixel(GFX_Coord_t x, GFX_Coord_t y) {
+  return writeBuffer + (y * ColorduinoScreenWidth) + x;
 }
 
 void ColorduinoPanel::init(void) {
@@ -223,7 +255,7 @@ void ColorduinoPanel::LED_Delay(unsigned char i) {
 void ColorduinoPanel::run(void) {
   LED_SLB_SET;
   LED_LAT_CLR;
-  GFX_Color_t *pixel = getDrawPixel(0, 7 - line);
+  Colorduino_Color_t *pixel = _getActivePixel(0, 7 - line);
   for(unsigned char x = 0; x < 8; x++) {
     unsigned char temp = pixel->b;
     unsigned char p;
@@ -265,11 +297,11 @@ void ColorduinoPanel::run(void) {
 void ColorduinoPanel::swapBuffers(boolean copy) {
   cli();
   // swap frame buffers
-  GFX_Color_t *tmp = drawBuffer;
-  drawBuffer = writeBuffer;
+  Colorduino_Color_t *tmp = activeBuffer;
+  activeBuffer = writeBuffer;
   writeBuffer = tmp;
   if(copy == true) {
-    memcpy(writeBuffer, drawBuffer, ColorduinoScreenWidth * ColorduinoScreenHeight * sizeof(GFX_Color_t));
+    memcpy(writeBuffer, activeBuffer, ColorduinoScreenWidth * ColorduinoScreenHeight * sizeof(GFX_Color_t));
   }
   sei();
 }

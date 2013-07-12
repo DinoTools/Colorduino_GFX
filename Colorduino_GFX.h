@@ -110,10 +110,22 @@ define the IO
 
 #include "Adafruit_GFX.h"
 
+#ifndef GFX_COLOR_MODE
+#define GFX_COLOR_16BIT 0
+#define GFX_COLOR_8BIT 1
+#define GFX_COLOR_RGB24BIT 2
+#define GFX_COLOR_MODE 0
+typedef uint16_t GFX_Color_t;
+typedef int16_t GFX_Coord_t;
+#endif
+
+// this type is for internal use only
+typedef struct {uint8_t r; uint8_t g; uint8_t b;} Colorduino_Color_t;
+
 class ColorduinoPanel : public Adafruit_GFX {
   public:
-    GFX_Color_t *writeBuffer;
-    GFX_Color_t *drawBuffer;
+    Colorduino_Color_t *writeBuffer;
+    Colorduino_Color_t *activeBuffer;
 
     uint8_t line;
 
@@ -136,10 +148,17 @@ class ColorduinoPanel : public Adafruit_GFX {
       swapBuffers(boolean copy);
 
     GFX_Color_t
-      color(uint8_t r, uint8_t g, uint8_t b),
+      color(uint8_t r, uint8_t g, uint8_t b);
+    GFX_Color_t
       // get a pixel for writing in the offscreen framebuffer
-      *getPixel(GFX_Coord_t x, GFX_Coord_t y),
+      getActivePixel(GFX_Coord_t x, GFX_Coord_t y),
       // get a pixel from the active framebuffer
-      *getDrawPixel(GFX_Coord_t x, GFX_Coord_t y);
+      getWritePixel(GFX_Coord_t x, GFX_Coord_t y);
+
+  private:
+    Colorduino_Color_t
+      *_getActivePixel(GFX_Coord_t x, GFX_Coord_t y),
+      *_getWritePixel(GFX_Coord_t x, GFX_Coord_t y);
+
 };
 #endif
