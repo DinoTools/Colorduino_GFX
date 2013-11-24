@@ -1,6 +1,14 @@
 #ifndef _COLORDUINO_GFX_H_
 #define _COLORDUINO_GFX_H_
 
+#define COLORDUINO_GFX_MAJOR 1
+#define COLORDUINO_GFX_MINOR 0
+#define COLORDUINO_GFX_PATCH 0
+
+#define COLORDUINO_GFX_VERSION (COLORDUINO_GFX_MAJOR * 10000 \
+		              + COLORDUINO_GFX_MINOR * 100 \
+		              + COLORDUINO_GFX_PATCH)
+
 #if ARDUINO >= 100
  #include "Arduino.h"
 #else
