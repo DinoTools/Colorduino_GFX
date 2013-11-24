@@ -6,17 +6,12 @@ This library depends on a slightly modified version of the Adafruit GFX library 
 Installation
 ------------
 
-The Colorduino GFX library depends on slightly modified version of the Adafruit GFX library. Download and install this library first.
+The Colorduino GFX library depends on the Adafruit GFX library. Use the original Adafruit GFX library or the 8-bit mode of the slightly modified version for a smaller code size. Download and install the dependencies first.
 
 Download the source code and rename the uncompressed folder to Colorduino\_GFX. The folder should at least contain the files Colorduino\_GFX.cpp and Colorduino\_GFX.h. Place the folder in your `<Arduino-Sketch-Folder>/libraries/` folder and restart the Arduino IDE.
 
 Usage
 -----
-
-Before you start set the right values in the Config section of the modified Adafruit GFX library. Use a struct for red, green and blue and 8 bit vars for the coordinates.
-
-    typedef struct {uint8_t r; uint8_t g; uint8_t b;} GFX_Color_t;
-    typedef int8_t GFX_Coord_t;
 
 Include all required libraries first.
 
@@ -64,6 +59,7 @@ Additional resources
 ====================
 
 * [Adafruit GFX Library](https://github.com/adafruit/Adafruit-GFX-Library)
-* [Modified version of the Adafruit GFX Library, required by this library](https://github.com/dinotools/Adafruit-GFX-Library)
+* [Colorduino GFX Library](https://github.com/DinoTools/Colorduino_GFX) (Sources and Bug Tracker)
+* [Colorduino GFX Library project page](https://github.com/DinoTools/Colorduino_GFX)
+* [Modified version of the Adafruit GFX Library](https://github.com/dinotools/Adafruit-GFX-Library) (optional)
 * [Original Colorduino Library](https://github.com/lincomatic/Colorduino)
-* [Colorduino GFX Library](https://github.com/DinoTools/Colorduino_GFX)
