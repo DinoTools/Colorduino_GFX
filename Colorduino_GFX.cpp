@@ -301,7 +301,7 @@ void ColorduinoPanel::swapBuffers(boolean copy) {
   activeBuffer = writeBuffer;
   writeBuffer = tmp;
   if(copy == true) {
-    memcpy(writeBuffer, activeBuffer, ColorduinoScreenWidth * ColorduinoScreenHeight * sizeof(GFX_Color_t));
+    memcpy(writeBuffer, activeBuffer, ColorduinoScreenWidth * ColorduinoScreenHeight * sizeof(Colorduino_Color_t));
   }
   sei();
 }
